@@ -1,0 +1,79 @@
+<head>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <script type="importmap">
+      {
+        "imports": {
+          "@material/web/": "https://esm.run/@material/web/"
+        }
+      }
+    </script>
+    <script type="module">
+      import "@material/web/all.js";
+      import { styles as typescaleStyles } from "@material/web/typography/md-typescale-styles.js";
+  
+      document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+    </script>
+  
+    <!-- Keep these script includes for potential camera functionality if needed -->
+    <script src="gemini-live-api.js"></script>
+    <script src="live-media-manager.js"></script>
+    <!-- <script src="cookieJar.js"></script> -->
+  
+    <link rel="stylesheet" href="mstyles.css" />
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div id="camera-app-container">
+      <div id="app-header">
+        Scene Style Swap Demo
+      </div>
+      <div id="video-preview">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+      </div>
+      <div id="scene-style-info">
+        <div id="scene-detected">
+          <span class="info-label">Scene Detected:</span><br>  <!-- Added <br> tag here -->
+          <span id="scene-value" class="info-value">Indoor</span>
+        </div>
+        <div id="style-indicator">
+          <div id="camera-button"></div>
+        </div>
+        <div id="suggested-style">
+          <span class="info-label">Suggested Style:</span><br>  <!-- Added <br> tag here -->
+          <span id="style-value" class="info-value">Vibrant, Warm</span>
+        </div>
+      </div>
+    </div>
+  
+    <script>
+      // Example JavaScript to update the dynamic values (script.js)
+      document.addEventListener('DOMContentLoaded', () => {
+        // Set initial default values (already in HTML, but can be set here too)
+        const sceneValueSpan = document.getElementById('scene-value');
+        const styleValueSpan = document.getElementById('style-value');
+  
+        // Example function to simulate receiving new data from backend
+        function updateSceneStyle(scene, style) {
+          sceneValueSpan.textContent = scene;
+          styleValueSpan.textContent = style;
+        }
+  
+        // Simulate updates after a delay (for demonstration)
+        setTimeout(() => {
+          updateSceneStyle('Outdoor', 'Natural, Earthy'); // Example update 1
+        }, 3000); // Update after 3 seconds
+  
+        setTimeout(() => {
+          updateSceneStyle('City', 'Cool, Modern');   // Example update 2
+        }, 6000); // Update after 6 seconds
+      });
+    </script>
+  </body>

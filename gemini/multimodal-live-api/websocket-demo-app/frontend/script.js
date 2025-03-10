@@ -3,13 +3,15 @@ window.addEventListener("load", (event) => {
 
     setAvailableCamerasOptions();
     setAvailableMicrophoneOptions();
+    initCameraButtonClick(); // Initialize the click handler for camera-button
 });
 
-const PROXY_URL = "wss://[THE_URL_YOU_COPIED_WITHOUT_HTTP]";
-const PROJECT_ID = "your project id";
+const PROXY_URL = "ws://localhost:8080";
+const PROJECT_ID = "consumer-genai-experiments";
 const MODEL = "gemini-2.0-flash-exp";
 const API_HOST = "us-central1-aiplatform.googleapis.com";
 
+/*
 const accessTokenInput = document.getElementById("token");
 const projectInput = document.getElementById("project");
 const systemInstructionsInput = document.getElementById("systemInstructions");
@@ -30,6 +32,7 @@ const screenBtn = document.getElementById("screenBtn");
 
 const cameraSelect = document.getElementById("cameraSource");
 const micSelect = document.getElementById("audioSource");
+*/
 
 const geminiLiveApi = new GeminiLiveAPI(PROXY_URL, PROJECT_ID, MODEL, API_HOST);
 
@@ -90,6 +93,7 @@ liveAudioInputManager.onNewAudioRecordingChunk = (audioData) => {
     geminiLiveApi.sendAudioMessage(audioData);
 };
 
+/*
 function addMessageToChat(message) {
     const textChat = document.getElementById("text-chat");
     const newParagraph = document.createElement("p");
@@ -99,7 +103,78 @@ function addMessageToChat(message) {
 
 function newModelMessage(message) {
     addMessageToChat(">> " + message);
+
 }
+*/
+
+function newModelMessage(message) {
+    const textChat = document.getElementById("text-chat");
+    let modelResponseContainer = textChat.querySelector(".model-response");
+
+    if (!modelResponseContainer) {
+        modelResponseContainer = document.createElement("div");
+        modelResponseContainer.classList.add("model-response");
+        textChat.appendChild(modelResponseContainer);
+
+        const prefixSpan = document.createElement("span");
+        prefixSpan.textContent = ">> ";
+        prefixSpan.classList.add("prefix");
+        modelResponseContainer.appendChild(prefixSpan);
+    }
+
+    const lines = formatMessage(message);
+    lines.forEach((line) => {
+        const messageSpan = document.createElement("span");
+        messageSpan.textContent = line;
+        messageSpan.classList.add("message-chunk");
+        modelResponseContainer.appendChild(messageSpan);
+
+        const lineBreak = document.createElement("br");
+        modelResponseContainer.appendChild(lineBreak);
+    });
+    textChat.scrollTop = textChat.scrollHeight;
+}
+
+function formatMessage(message) {
+    let formattedLines = [];
+    let currentLine = "";
+
+    const words = message.split(" ");
+    words.forEach((word) => {
+        // Check for bold marker (**) and break line if found
+        if (word.startsWith("**") || word.endsWith("**")) {
+            if(currentLine!=""){
+                formattedLines.push(currentLine);
+                currentLine="";
+            }
+           
+            formattedLines.push(word);
+            return;
+        }
+        //Check for semi-colon for code
+        if (word.endsWith(";")) {
+            currentLine += " "+word;
+             formattedLines.push(currentLine);
+             currentLine="";
+             return;
+        }
+        currentLine += " " + word;
+        
+    });
+    if (currentLine != "") {
+         formattedLines.push(currentLine);
+     }
+    return formattedLines;
+}
+
+function addMessageToChat(message) {
+    const textChat = document.getElementById("text-chat");
+    const newParagraph = document.createElement("p");
+    newParagraph.textContent = message;
+    textChat.appendChild(newParagraph);
+    textChat.scrollTop = textChat.scrollHeight;
+}
+
 
 function newUserMessage() {
     const textMessage = document.getElementById("text-message");
@@ -132,6 +207,7 @@ function micOffBtnClick() {
     micOffBtn.hidden = true;
 }
 
+/*
 const videoElement = document.getElementById("video");
 const canvasElement = document.getElementById("canvas");
 
@@ -146,6 +222,7 @@ liveVideoManager.onNewFrame = (b64Image) => {
 liveScreenManager.onNewFrame = (b64Image) => {
     geminiLiveApi.sendImageMessage(b64Image);
 };
+*/
 
 function startCameraCapture() {
     liveScreenManager.stopCapture();
@@ -259,4 +336,70 @@ function setAppStatus(status) {
             break;
         default:
     }
+}
+
+function initCameraButtonClick() {
+    const styleCircle = document.getElementById("camera-button");
+    let isConnectedToGemini = false; // Track the connection status
+
+    styleCircle.addEventListener("click", () => {
+        console.log("Record Circle Clicked!");
+
+        if (!isConnectedToGemini) {
+            console.log("Connecting to Gemini Live API...");
+            //Check if LiveMediaManager is available and instantiated
+            /*
+            if (typeof LiveMediaManager !== 'undefined' && LiveMediaManager.instance) {
+                console.log("LiveMediaManager instance found.");
+                const mediaManager = LiveMediaManager.instance;
+
+                //Check if geminiLiveAPI is set
+                if (!mediaManager.geminiLiveAPI) {
+                    console.error("GeminiLiveAPI is not initiated. Run initGeminiLiveAPI() first.");
+                    return;
+                }
+
+                //check if the gemini websocket is connected
+                if (mediaManager.geminiLiveAPI.connected) {
+                    console.log("Gemini Websocket is already connected");
+                } else {
+                    mediaManager.geminiLiveAPI.connect();
+                }
+            } else {
+                console.error("LiveMediaManager is not available or not instantiated. Please ensure it's loaded and initialized.");
+                return;
+            }
+            */
+            styleCircle.style.backgroundColor = "red";
+            isConnectedToGemini = true;
+        } else {
+            console.log("Disconnecting from Gemini Live API...");
+
+            //Check if LiveMediaManager is available and instantiated
+            /*
+            if (typeof LiveMediaManager !== 'undefined' && LiveMediaManager.instance) {
+                console.log("LiveMediaManager instance found.");
+                const mediaManager = LiveMediaManager.instance;
+
+                 //Check if geminiLiveAPI is set
+                if (!mediaManager.geminiLiveAPI) {
+                    console.error("GeminiLiveAPI is not initiated. Run initGeminiLiveAPI() first.");
+                    return;
+                }
+                 //check if the gemini websocket is connected
+                if (mediaManager.geminiLiveAPI.connected) {
+                    mediaManager.geminiLiveAPI.disconnect();
+                } else {
+                    console.log("Gemini Websocket is already disconnected");
+                }
+            }else {
+                console.error("LiveMediaManager is not available or not instantiated. Please ensure it's loaded and initialized.");
+                return;
+            }
+            */
+
+            styleCircle.style.backgroundColor = "white"; // Reset to original color
+            isConnectedToGemini = false;
+        }
+    });
 }

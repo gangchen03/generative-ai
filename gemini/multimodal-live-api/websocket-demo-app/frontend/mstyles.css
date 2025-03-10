@@ -1,0 +1,107 @@
+html, body {
+    /* height: 100%;  Removed: No longer needed for full height body */
+    margin: 0;
+    overflow: auto; /* Changed from hidden to auto to allow scrolling if content overflows */
+  }
+  
+  body {
+    font-family: "Roboto", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Re-added: To vertically center the app container */
+    min-height: 100vh; /* Ensure body is at least viewport height */
+    background-color: #f0f0f0; /* Example background color */
+  }
+  
+  #camera-app-container {
+    width: 80%; /* Modified: Percentage width for responsiveness */
+    max-width: 400px; /* Modified: Added max-width to prevent too wide on large screens */
+    height: 80vh; /* Modified: Set to 80% of viewport height */
+    /* min-height: 100vh; Removed: No longer need min-height to be viewport height */
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; /* Ensure column layout for flexbox */
+    margin-top: 10vh; /* Modified: Top margin adjusted for 80vh height */
+    margin-bottom: 10vh; /* Modified: Bottom margin adjusted for 80vh height */
+  }
+  
+  /* Added: Header section styles */
+  #app-header {
+    background-color: #333; /* Dark background for header */
+    color: #fff; /* White text color */
+    padding: 15px; /* Same padding as bottom section */
+    font-size: 18px; /* Example header font size */
+    font-weight: 500; /* Example header font weight */
+    text-align: center; /* Center align header text */
+  }
+  
+  #video-preview {
+    background-color: rgba(173, 216, 230, 0.3); /* Light blue background for video area */
+    height: 0; /* Modified: Set height to 0 initially */
+    padding-top: 133%; /* Modified: Maintain 4:3 aspect ratio (adjust as needed) */
+    position: relative; /* Modified: For absolute positioning of video/canvas */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    flex: 1; /* Re-added: Let video-preview take remaining vertical space - IMPORTANT */
+  }
+  
+  #video-preview video,
+  #video-preview canvas {
+    display: block;
+    position: absolute; /* Modified: Position video/canvas absolutely */
+    top: 0; /* Modified: Position at top */
+    left: 0; /* Modified: Position at left */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the area, may crop */
+  }
+
+  #scene-style-info {
+    background-color: #333; /* Dark background for bottom info section */
+    color: #fff; /* White text color */
+    /* padding: 15px; Modified: Increased padding to make taller */
+    padding-top: 25px; /* Increased top padding */
+    padding-bottom: 25px; /* Increased bottom padding */
+    padding-left: 15px; /* Keep left padding */
+    padding-right: 15px; /* Keep right padding */
+    display: flex;
+    align-items: center; /* Vertically center items */
+    justify-content: space-between; /* Space out the text and circle */
+    /* position: absolute;  Removed: No need for absolute positioning anymore */
+    /* bottom: 0; Removed: No need for absolute bottom positioning anymore */
+    /* width: 100%; Removed: No need to force width anymore */
+  }
+  
+  #scene-detected,
+  #suggested-style {
+    font-size: 14px;
+    white-space: nowrap; /* Prevent text from wrapping */
+  }
+  
+  #style-indicator {
+    width: 40px; /* Adjust as needed */
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 10px; /* Spacing between text and circle */
+  }
+  
+  #camera-button {
+    width: 40px; /* Circle size */
+    height: 40px;
+    border-radius: 50%; /* Make it a circle */
+    background-color: #fff; /* White circle color as in image */
+    border: 2px solid #fff; /* White border to make it stand out on dark background */
+  }
+  
+  /* Optional: Style value text to be slightly bolder */
+  #scene-value,
+  #style-value {
+    font-weight: 500;
+  }
