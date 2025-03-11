@@ -35,13 +35,31 @@
         Scene Style Swap Demo
       </div>
       <div id="video-preview">
+        <div id="model-state">
+            <div id="disconnected" class="state">
+              <span class="material-symbols-outlined"> cloud_off </span>
+              <span class="icon-text">disconnected</span>
+            </div>
+            <div id="connecting" class="state" hidden>
+              <span class="material-symbols-outlined"> hourglass_empty </span>
+              <span class="icon-text">connecting...</span>
+            </div>
+            <div id="connected" class="state" hidden>
+              <span class="material-symbols-outlined"> cloud_done </span>
+              <span class="icon-text">connected</span>
+            </div>
+            <div id="speaking" class="state" hidden>
+              <span class="material-symbols-outlined"> graphic_eq </span>
+              <span class="icon-text">model speaking</span>
+            </div>
+          </div>
         <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas"></canvas>
       </div>
       <div id="scene-style-info">
         <div id="scene-detected">
           <span class="info-label">Scene Detected:</span><br>  <!-- Added <br> tag here -->
-          <span id="scene-value" class="info-value">Indoor</span>
+          <span id="scene-value" class="info-value">Outdoor</span>
         </div>
         <div id="style-indicator">
           <div id="camera-button"></div>
@@ -52,7 +70,11 @@
         </div>
       </div>
     </div>
-  
+    <md-dialog id="dialog" close>
+        <div slot="content">
+          <span id="dialogMessage">A dialog that is opened by default.</span>
+        </div>
+    </md-dialog>
     <script>
       // Example JavaScript to update the dynamic values (script.js)
       document.addEventListener('DOMContentLoaded', () => {
@@ -67,6 +89,7 @@
         }
   
         // Simulate updates after a delay (for demonstration)
+        /*
         setTimeout(() => {
           updateSceneStyle('Outdoor', 'Natural, Earthy'); // Example update 1
         }, 3000); // Update after 3 seconds
@@ -74,6 +97,7 @@
         setTimeout(() => {
           updateSceneStyle('City', 'Cool, Modern');   // Example update 2
         }, 6000); // Update after 6 seconds
+        */
       });
     </script>
   </body>

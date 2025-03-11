@@ -1,3 +1,30 @@
+const PROXY_URL = "ws://localhost:8080";
+const PROJECT_ID = "consumer-genai-experiments";
+const MODEL = "gemini-2.0-flash-exp";
+const API_HOST = "us-central1-aiplatform.googleapis.com";
+
+const prompt = "You are an expert photographer who knows how to adjust phone camera \
+                 for best pictures. Please describe what scene you see now such as indoor or outdoor \
+                 here are some other scene options: city, office, nature, beach \
+                 please response in the follownig format: \
+                 Scene: City";
+
+const accessTokenInput = { value: "ya29.A0AeXRPp6U9SkK1pc1pSa6fDU1vtSsGQGeWxJGSmtTwrdo8Rdhstty_5eRWkNlrq6f8EMn9ZinAbdBxbx47fMu5EIrAeZ32hsEv2stc1P-x8Npr8mT9y4kdZi6sZcPWwoXy-uo4N4cOFCx_cjM9kt4mdrNJY_0l9gaiawBb3Jp2Kz6OohZN4qWeSMBXtHKc1qS1f7QL4U_JqPGrQaCgYKAZMSARMSFQHGX2Mi0ArM4_CPcWsjuuzROXs-oQ0213"}
+const projectInput = {value: PROJECT_ID};
+const systemInstructionsInput = {value: prompt}
+
+//for mobile.html
+let cameraButtonMobile = null;
+
+const geminiLiveApi = new GeminiLiveAPI(PROXY_URL, PROJECT_ID, MODEL, API_HOST);
+
+geminiLiveApi.onErrorMessage = (message) => {
+    showDialogWithMessage(message);
+    setAppStatus("disconnected");
+};
+
+const disconnected = document.getElementById("disconnected");
+
 window.addEventListener("load", (event) => {
     console.log("Hello Gemini Realtime Demo!");
 
@@ -5,11 +32,6 @@ window.addEventListener("load", (event) => {
     setAvailableMicrophoneOptions();
     initCameraButtonClick(); // Initialize the click handler for camera-button
 });
-
-const PROXY_URL = "ws://localhost:8080";
-const PROJECT_ID = "consumer-genai-experiments";
-const MODEL = "gemini-2.0-flash-exp";
-const API_HOST = "us-central1-aiplatform.googleapis.com";
 
 /*
 const accessTokenInput = document.getElementById("token");
@@ -34,18 +56,15 @@ const cameraSelect = document.getElementById("cameraSource");
 const micSelect = document.getElementById("audioSource");
 */
 
-const geminiLiveApi = new GeminiLiveAPI(PROXY_URL, PROJECT_ID, MODEL, API_HOST);
-
-geminiLiveApi.onErrorMessage = (message) => {
-    showDialogWithMessage(message);
-    setAppStatus("disconnected");
-};
-
 function getSelectedResponseModality() {
     // return "AUDIO";
     const radioButtons = document.querySelectorAll(
         'md-radio[name="responseModality"]',
     );
+
+    if (radioButtons.length === 0) {
+        return "TEXT"; // Return "TEXT" if no radio buttons found
+    }
 
     let selectedValue;
     for (const radioButton of radioButtons) {
@@ -83,7 +102,11 @@ geminiLiveApi.onReceiveResponse = (messageResponse) => {
         liveAudioOutputManager.playAudioChunk(messageResponse.data);
     } else if (messageResponse.type == "TEXT") {
         console.log("Gemini said: ", messageResponse.data);
+        
+        // Switch to mobile case
         newModelMessage(messageResponse.data);
+        //update the UI
+        updateSceneStyle(messageResponse.data)
     }
 };
 
@@ -93,6 +116,12 @@ liveAudioInputManager.onNewAudioRecordingChunk = (audioData) => {
     geminiLiveApi.sendAudioMessage(audioData);
 };
 
+function newModelMessage(message) {
+    // addMessageToChat(">> " + message);
+    console.log(">> " + message);
+
+}
+
 /*
 function addMessageToChat(message) {
     const textChat = document.getElementById("text-chat");
@@ -100,12 +129,6 @@ function addMessageToChat(message) {
     newParagraph.textContent = message;
     textChat.appendChild(newParagraph);
 }
-
-function newModelMessage(message) {
-    addMessageToChat(">> " + message);
-
-}
-*/
 
 function newModelMessage(message) {
     const textChat = document.getElementById("text-chat");
@@ -174,6 +197,7 @@ function addMessageToChat(message) {
     textChat.appendChild(newParagraph);
     textChat.scrollTop = textChat.scrollHeight;
 }
+*/ 
 
 
 function newUserMessage() {
@@ -207,7 +231,6 @@ function micOffBtnClick() {
     micOffBtn.hidden = true;
 }
 
-/*
 const videoElement = document.getElementById("video");
 const canvasElement = document.getElementById("canvas");
 
@@ -222,7 +245,6 @@ liveVideoManager.onNewFrame = (b64Image) => {
 liveScreenManager.onNewFrame = (b64Image) => {
     geminiLiveApi.sendImageMessage(b64Image);
 };
-*/
 
 function startCameraCapture() {
     liveScreenManager.stopCapture();
@@ -341,65 +363,56 @@ function setAppStatus(status) {
 function initCameraButtonClick() {
     const styleCircle = document.getElementById("camera-button");
     let isConnectedToGemini = false; // Track the connection status
+    let isCameraOpen = false; // Track if the camera is open
 
     styleCircle.addEventListener("click", () => {
-        console.log("Record Circle Clicked!");
+        console.log("Camera Button Clicked!");
 
         if (!isConnectedToGemini) {
             console.log("Connecting to Gemini Live API...");
-            //Check if LiveMediaManager is available and instantiated
-            /*
-            if (typeof LiveMediaManager !== 'undefined' && LiveMediaManager.instance) {
-                console.log("LiveMediaManager instance found.");
-                const mediaManager = LiveMediaManager.instance;
-
-                //Check if geminiLiveAPI is set
-                if (!mediaManager.geminiLiveAPI) {
-                    console.error("GeminiLiveAPI is not initiated. Run initGeminiLiveAPI() first.");
-                    return;
-                }
-
-                //check if the gemini websocket is connected
-                if (mediaManager.geminiLiveAPI.connected) {
-                    console.log("Gemini Websocket is already connected");
-                } else {
-                    mediaManager.geminiLiveAPI.connect();
-                }
-            } else {
-                console.error("LiveMediaManager is not available or not instantiated. Please ensure it's loaded and initialized.");
+            
+            //Check that the user has logged in
+            if (!accessTokenInput) {
+                showDialogWithMessage("Access Token is missing. Please set the access_token environment variable.");
                 return;
-            }
-            */
+            }        
+            
+            connectBtnClick(); // Connect to Gemini Live API
+            
+            console.log("Connected to Gemini Live API!");
             styleCircle.style.backgroundColor = "red";
             isConnectedToGemini = true;
+            
+
+            //Open the browser camera
+            if(!isCameraOpen){
+                isCameraOpen = true;
+                startCameraCapture();// Open the browser camera
+            }
+           
         } else {
             console.log("Disconnecting from Gemini Live API...");
 
-            //Check if LiveMediaManager is available and instantiated
-            /*
-            if (typeof LiveMediaManager !== 'undefined' && LiveMediaManager.instance) {
-                console.log("LiveMediaManager instance found.");
-                const mediaManager = LiveMediaManager.instance;
-
-                 //Check if geminiLiveAPI is set
-                if (!mediaManager.geminiLiveAPI) {
-                    console.error("GeminiLiveAPI is not initiated. Run initGeminiLiveAPI() first.");
-                    return;
-                }
-                 //check if the gemini websocket is connected
-                if (mediaManager.geminiLiveAPI.connected) {
-                    mediaManager.geminiLiveAPI.disconnect();
-                } else {
-                    console.log("Gemini Websocket is already disconnected");
-                }
-            }else {
-                console.error("LiveMediaManager is not available or not instantiated. Please ensure it's loaded and initialized.");
-                return;
-            }
-            */
-
+            disconnectBtnClick(); // Disconnect from Gemini Live API
             styleCircle.style.backgroundColor = "white"; // Reset to original color
             isConnectedToGemini = false;
+            isCameraOpen = false;
+
+            liveVideoManager.stopWebcam();//stop the camera
         }
     });
+}
+
+function updateSceneStyle(message) {
+    const sceneValueSpan = document.getElementById('scene-value');
+    const styleValueSpan = document.getElementById('style-value');
+
+    // Split the message into scene and style
+    const [scene, style] = message.split("&&");
+    if(scene){
+        sceneValueSpan.textContent = scene.trim();
+    }
+    if(style){
+        styleValueSpan.textContent = style.trim();
+    }
 }

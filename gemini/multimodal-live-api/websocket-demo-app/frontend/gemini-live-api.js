@@ -26,7 +26,7 @@ class GeminiLiveAPI {
         this.model = model;
         this.modelUri = `projects/${this.projectId}/locations/us-central1/publishers/google/models/${this.model}`;
 
-        this.responseModalities = ["AUDIO"];
+        this.responseModalities = ["TEXT"];
         this.systemInstructions = "";
 
         this.apiHost = apiHost;

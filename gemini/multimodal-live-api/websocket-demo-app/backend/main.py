@@ -77,6 +77,7 @@ async def handle_client(client_websocket: WebSocketServerProtocol) -> None:
 
     if "bearer_token" in auth_data:
         bearer_token = auth_data["bearer_token"]
+        # print("Bearer Token: " + bearer_token)
     else:
         print("Error: Bearer token not found in the first message.")
         await client_websocket.close(code=1008, reason="Bearer token missing")

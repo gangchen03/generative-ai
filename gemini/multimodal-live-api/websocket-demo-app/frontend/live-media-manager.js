@@ -187,17 +187,20 @@ class LiveVideoManager {
             console.error("Error accessing the webcam: ", err);
         }
 
-        setInterval(this.newFrame.bind(this), 1000);
+        this.interval = setInterval(this.newFrame.bind(this), 1000);
     }
 
     stopWebcam() {
+        console.log("stopWebcam calling...");
         clearInterval(this.interval);
         this.stopStream();
+        this.interval = null;
     }
 
     stopStream() {
         if (!this.stream) return;
 
+        console.log("stopStream calling...");
         const tracks = this.stream.getTracks();
 
         tracks.forEach((track) => {
