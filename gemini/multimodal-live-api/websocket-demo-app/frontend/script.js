@@ -13,7 +13,7 @@ const prompt = "You are an expert photographer who knows how to adjust phone cam
                  Scene: Indoor && Style: Cool \
                  Scene: Outdoor && Style: Vibrant ";
 
-const accessTokenInput = { value: "ya29.A0AeXRPp5VSVxNaP3sCJ-x-TmzVqtqTw8zskX04UsLzXOA60_vKMYqDoob_XGFam-Uxqnkhhe4m36usRvtPUHgkX56ocF2d1YeTfUWajqezGJkgLOpWPVsPKAJBa8TsAEQHII00Opo-Q9fBnj5pzC8cjQ8ZJ04H-MlEK3gfGDiZ4KT9gJzkEmoMQhOVKl0kZesyU8KHW3l8YFIVQaCgYKAWUSARMSFQHGX2Miq7YWJqTLFxE67Y4KjRa9Iw0213"}
+const accessTokenInput = { value: ""}
 const projectInput = {value: PROJECT_ID};
 const systemInstructionsInput = {value: prompt}
 
