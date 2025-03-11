@@ -5,11 +5,15 @@ const API_HOST = "us-central1-aiplatform.googleapis.com";
 
 const prompt = "You are an expert photographer who knows how to adjust phone camera \
                  for best pictures. Please describe what scene you see now such as indoor or outdoor \
-                 here are some other scene options: city, office, nature, beach \
-                 please response in the follownig format: \
-                 Scene: City";
+                 here are some other scene options: city, office, nature, beach. \
+                 please also suggest camera filter style, here are the suggestion rules: \
+                 for outdoor and nature scene, apply a Vibrant/Warm style. \
+                 for indoor scene, apply a Cool style. for city scene, apply modern style \
+                 please response in the following format: \
+                 Scene: Indoor && Style: Cool \
+                 Scene: Outdoor && Style: Vibrant ";
 
-const accessTokenInput = { value: "ya29.A0AeXRPp6U9SkK1pc1pSa6fDU1vtSsGQGeWxJGSmtTwrdo8Rdhstty_5eRWkNlrq6f8EMn9ZinAbdBxbx47fMu5EIrAeZ32hsEv2stc1P-x8Npr8mT9y4kdZi6sZcPWwoXy-uo4N4cOFCx_cjM9kt4mdrNJY_0l9gaiawBb3Jp2Kz6OohZN4qWeSMBXtHKc1qS1f7QL4U_JqPGrQaCgYKAZMSARMSFQHGX2Mi0ArM4_CPcWsjuuzROXs-oQ0213"}
+const accessTokenInput = { value: "ya29.A0AeXRPp5VSVxNaP3sCJ-x-TmzVqtqTw8zskX04UsLzXOA60_vKMYqDoob_XGFam-Uxqnkhhe4m36usRvtPUHgkX56ocF2d1YeTfUWajqezGJkgLOpWPVsPKAJBa8TsAEQHII00Opo-Q9fBnj5pzC8cjQ8ZJ04H-MlEK3gfGDiZ4KT9gJzkEmoMQhOVKl0kZesyU8KHW3l8YFIVQaCgYKAWUSARMSFQHGX2Miq7YWJqTLFxE67Y4KjRa9Iw0213"}
 const projectInput = {value: PROJECT_ID};
 const systemInstructionsInput = {value: prompt}
 
@@ -104,7 +108,7 @@ geminiLiveApi.onReceiveResponse = (messageResponse) => {
         console.log("Gemini said: ", messageResponse.data);
         
         // Switch to mobile case
-        newModelMessage(messageResponse.data);
+        // newModelMessage(messageResponse.data);
         //update the UI
         updateSceneStyle(messageResponse.data)
     }
@@ -407,12 +411,19 @@ function updateSceneStyle(message) {
     const sceneValueSpan = document.getElementById('scene-value');
     const styleValueSpan = document.getElementById('style-value');
 
-    // Split the message into scene and style
-    const [scene, style] = message.split("&&");
-    if(scene){
-        sceneValueSpan.textContent = scene.trim();
+    if (!sceneValueSpan || !styleValueSpan){
+        return;
     }
-    if(style){
-        styleValueSpan.textContent = style.trim();
+
+    // Expected format: "Scene: Outdoor && Style: Vibrant"
+    const sceneMatch = message.match(/Scene:\s*(\w+)/);
+    const styleMatch = message.match(/Style:\s*([\w,\s]+)/);
+
+    if (sceneMatch && sceneMatch[1]) {
+        sceneValueSpan.textContent = sceneMatch[1].trim();
+    }
+
+    if (styleMatch && styleMatch[1]) {
+        styleValueSpan.textContent = styleMatch[1].trim();
     }
 }
