@@ -29,6 +29,11 @@ geminiLiveApi.onErrorMessage = (message) => {
 
 const disconnected = document.getElementById("disconnected");
 
+// Buffering variables
+let responseBuffer = "";
+let responseTimeout = null;
+const COMPLETION_TIMEOUT = 1000; // Timeout in milliseconds (1 second)
+
 window.addEventListener("load", (event) => {
     console.log("Hello Gemini Realtime Demo!");
 
@@ -110,7 +115,19 @@ geminiLiveApi.onReceiveResponse = (messageResponse) => {
         // Switch to mobile case
         // newModelMessage(messageResponse.data);
         //update the UI
-        updateSceneStyle(messageResponse.data)
+        // updateSceneStyle(messageResponse.data)
+        // Accumulate chunks
+        responseBuffer += messageResponse.data;
+
+        // Reset timeout on each chunk received
+        clearTimeout(responseTimeout);
+
+        // Set a new timeout to process the buffer after a pause
+        responseTimeout = setTimeout(() => {
+            // Process the buffer
+            updateSceneStyle(responseBuffer);
+            responseBuffer = ""; // Clear the buffer
+        }, COMPLETION_TIMEOUT);
     }
 };
 
@@ -332,13 +349,13 @@ function setMaterialSelect(allOptions, selectElement) {
 async function setAvailableCamerasOptions() {
     const cameras = await getAvailableCameras();
     const videoSelect = document.getElementById("cameraSource");
-    setMaterialSelect(cameras, videoSelect);
+    // setMaterialSelect(cameras, videoSelect);
 }
 
 async function setAvailableMicrophoneOptions() {
     const mics = await getAvailableAudioInputs();
     const audioSelect = document.getElementById("audioSource");
-    setMaterialSelect(mics, audioSelect);
+    // setMaterialSelect(mics, audioSelect);
 }
 
 function setAppStatus(status) {
