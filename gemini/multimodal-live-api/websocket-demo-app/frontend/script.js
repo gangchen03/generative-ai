@@ -1,48 +1,15 @@
-const PROXY_URL = "ws://localhost:8080";
-const PROJECT_ID = "consumer-genai-experiments";
-const MODEL = "gemini-2.0-flash-exp";
-const API_HOST = "us-central1-aiplatform.googleapis.com";
-
-const prompt = "You are an expert photographer who knows how to adjust phone camera \
-                 for best pictures. Please describe what scene you see now such as indoor or outdoor \
-                 here are some other scene options: city, office, nature, beach. \
-                 please also suggest camera filter style, here are the suggestion rules: \
-                 for outdoor and nature scene, apply a Vibrant/Warm style. \
-                 for indoor scene, apply a Cool style. for city scene, apply modern style \
-                 please response in the following format: \
-                 Scene: Indoor && Style: Cool \
-                 Scene: Outdoor && Style: Vibrant ";
-
-const accessTokenInput = { value: ""}
-const projectInput = {value: PROJECT_ID};
-const systemInstructionsInput = {value: prompt}
-
-//for mobile.html
-let cameraButtonMobile = null;
-
-const geminiLiveApi = new GeminiLiveAPI(PROXY_URL, PROJECT_ID, MODEL, API_HOST);
-
-geminiLiveApi.onErrorMessage = (message) => {
-    showDialogWithMessage(message);
-    setAppStatus("disconnected");
-};
-
-const disconnected = document.getElementById("disconnected");
-
-// Buffering variables
-let responseBuffer = "";
-let responseTimeout = null;
-const COMPLETION_TIMEOUT = 1000; // Timeout in milliseconds (1 second)
-
 window.addEventListener("load", (event) => {
     console.log("Hello Gemini Realtime Demo!");
 
     setAvailableCamerasOptions();
     setAvailableMicrophoneOptions();
-    initCameraButtonClick(); // Initialize the click handler for camera-button
 });
 
-/*
+const PROXY_URL = "wss://[THE_URL_YOU_COPIED_WITHOUT_HTTP]";
+const PROJECT_ID = "your project id";
+const MODEL = "gemini-2.0-flash-live-preview-04-09";
+const API_HOST = "us-central1-aiplatform.googleapis.com";
+
 const accessTokenInput = document.getElementById("token");
 const projectInput = document.getElementById("project");
 const systemInstructionsInput = document.getElementById("systemInstructions");
@@ -63,17 +30,19 @@ const screenBtn = document.getElementById("screenBtn");
 
 const cameraSelect = document.getElementById("cameraSource");
 const micSelect = document.getElementById("audioSource");
-*/
+
+const geminiLiveApi = new GeminiLiveAPI(PROXY_URL, PROJECT_ID, MODEL, API_HOST);
+
+geminiLiveApi.onErrorMessage = (message) => {
+    showDialogWithMessage(message);
+    setAppStatus("disconnected");
+};
 
 function getSelectedResponseModality() {
     // return "AUDIO";
     const radioButtons = document.querySelectorAll(
         'md-radio[name="responseModality"]',
     );
-
-    if (radioButtons.length === 0) {
-        return "TEXT"; // Return "TEXT" if no radio buttons found
-    }
 
     let selectedValue;
     for (const radioButton of radioButtons) {
@@ -111,23 +80,7 @@ geminiLiveApi.onReceiveResponse = (messageResponse) => {
         liveAudioOutputManager.playAudioChunk(messageResponse.data);
     } else if (messageResponse.type == "TEXT") {
         console.log("Gemini said: ", messageResponse.data);
-        
-        // Switch to mobile case
-        // newModelMessage(messageResponse.data);
-        //update the UI
-        // updateSceneStyle(messageResponse.data)
-        // Accumulate chunks
-        responseBuffer += messageResponse.data;
-
-        // Reset timeout on each chunk received
-        clearTimeout(responseTimeout);
-
-        // Set a new timeout to process the buffer after a pause
-        responseTimeout = setTimeout(() => {
-            // Process the buffer
-            updateSceneStyle(responseBuffer);
-            responseBuffer = ""; // Clear the buffer
-        }, COMPLETION_TIMEOUT);
+        newModelMessage(messageResponse.data);
     }
 };
 
@@ -137,13 +90,6 @@ liveAudioInputManager.onNewAudioRecordingChunk = (audioData) => {
     geminiLiveApi.sendAudioMessage(audioData);
 };
 
-function newModelMessage(message) {
-    // addMessageToChat(">> " + message);
-    console.log(">> " + message);
-
-}
-
-/*
 function addMessageToChat(message) {
     const textChat = document.getElementById("text-chat");
     const newParagraph = document.createElement("p");
@@ -152,74 +98,8 @@ function addMessageToChat(message) {
 }
 
 function newModelMessage(message) {
-    const textChat = document.getElementById("text-chat");
-    let modelResponseContainer = textChat.querySelector(".model-response");
-
-    if (!modelResponseContainer) {
-        modelResponseContainer = document.createElement("div");
-        modelResponseContainer.classList.add("model-response");
-        textChat.appendChild(modelResponseContainer);
-
-        const prefixSpan = document.createElement("span");
-        prefixSpan.textContent = ">> ";
-        prefixSpan.classList.add("prefix");
-        modelResponseContainer.appendChild(prefixSpan);
-    }
-
-    const lines = formatMessage(message);
-    lines.forEach((line) => {
-        const messageSpan = document.createElement("span");
-        messageSpan.textContent = line;
-        messageSpan.classList.add("message-chunk");
-        modelResponseContainer.appendChild(messageSpan);
-
-        const lineBreak = document.createElement("br");
-        modelResponseContainer.appendChild(lineBreak);
-    });
-    textChat.scrollTop = textChat.scrollHeight;
+    addMessageToChat(">> " + message);
 }
-
-function formatMessage(message) {
-    let formattedLines = [];
-    let currentLine = "";
-
-    const words = message.split(" ");
-    words.forEach((word) => {
-        // Check for bold marker (**) and break line if found
-        if (word.startsWith("**") || word.endsWith("**")) {
-            if(currentLine!=""){
-                formattedLines.push(currentLine);
-                currentLine="";
-            }
-           
-            formattedLines.push(word);
-            return;
-        }
-        //Check for semi-colon for code
-        if (word.endsWith(";")) {
-            currentLine += " "+word;
-             formattedLines.push(currentLine);
-             currentLine="";
-             return;
-        }
-        currentLine += " " + word;
-        
-    });
-    if (currentLine != "") {
-         formattedLines.push(currentLine);
-     }
-    return formattedLines;
-}
-
-function addMessageToChat(message) {
-    const textChat = document.getElementById("text-chat");
-    const newParagraph = document.createElement("p");
-    newParagraph.textContent = message;
-    textChat.appendChild(newParagraph);
-    textChat.scrollTop = textChat.scrollHeight;
-}
-*/ 
-
 
 function newUserMessage() {
     const textMessage = document.getElementById("text-message");
@@ -349,13 +229,13 @@ function setMaterialSelect(allOptions, selectElement) {
 async function setAvailableCamerasOptions() {
     const cameras = await getAvailableCameras();
     const videoSelect = document.getElementById("cameraSource");
-    // setMaterialSelect(cameras, videoSelect);
+    setMaterialSelect(cameras, videoSelect);
 }
 
 async function setAvailableMicrophoneOptions() {
     const mics = await getAvailableAudioInputs();
     const audioSelect = document.getElementById("audioSource");
-    // setMaterialSelect(mics, audioSelect);
+    setMaterialSelect(mics, audioSelect);
 }
 
 function setAppStatus(status) {
@@ -378,69 +258,5 @@ function setAppStatus(status) {
             speaking.hidden = false;
             break;
         default:
-    }
-}
-
-function initCameraButtonClick() {
-    const styleCircle = document.getElementById("camera-button");
-    let isConnectedToGemini = false; // Track the connection status
-    let isCameraOpen = false; // Track if the camera is open
-
-    styleCircle.addEventListener("click", () => {
-        console.log("Camera Button Clicked!");
-
-        if (!isConnectedToGemini) {
-            console.log("Connecting to Gemini Live API...");
-            
-            //Check that the user has logged in
-            if (!accessTokenInput) {
-                showDialogWithMessage("Access Token is missing. Please set the access_token environment variable.");
-                return;
-            }        
-            
-            connectBtnClick(); // Connect to Gemini Live API
-            
-            console.log("Connected to Gemini Live API!");
-            styleCircle.style.backgroundColor = "red";
-            isConnectedToGemini = true;
-            
-
-            //Open the browser camera
-            if(!isCameraOpen){
-                isCameraOpen = true;
-                startCameraCapture();// Open the browser camera
-            }
-           
-        } else {
-            console.log("Disconnecting from Gemini Live API...");
-
-            disconnectBtnClick(); // Disconnect from Gemini Live API
-            styleCircle.style.backgroundColor = "white"; // Reset to original color
-            isConnectedToGemini = false;
-            isCameraOpen = false;
-
-            liveVideoManager.stopWebcam();//stop the camera
-        }
-    });
-}
-
-function updateSceneStyle(message) {
-    const sceneValueSpan = document.getElementById('scene-value');
-    const styleValueSpan = document.getElementById('style-value');
-
-    if (!sceneValueSpan || !styleValueSpan){
-        return;
-    }
-
-    // Expected format: "Scene: Outdoor && Style: Vibrant"
-    const sceneMatch = message.match(/Scene:\s*(\w+)/);
-    const styleMatch = message.match(/Style:\s*([\w,\s]+)/);
-
-    if (sceneMatch && sceneMatch[1]) {
-        sceneValueSpan.textContent = sceneMatch[1].trim();
-    }
-
-    if (styleMatch && styleMatch[1]) {
-        styleValueSpan.textContent = styleMatch[1].trim();
     }
 }
